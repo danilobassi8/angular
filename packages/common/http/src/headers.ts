@@ -73,11 +73,14 @@ export class HttpHeaders {
         }
         this.headers = new Map<string, string[]>();
         Object.keys(headers).forEach(name => {
-          let values: string|string[] = headers[name];
+          let values: string|string[]|number|number[] = headers[name];
           const key = name.toLowerCase();
           if (typeof values === 'string') {
             values = [values];
+          } else if (typeof values === 'number') {
+            values = [(values as number).toString()];
           }
+
           if (values.length > 0) {
             this.headers.set(key, values);
             this.maybeSetNormalizedName(name, key);
@@ -264,16 +267,16 @@ export class HttpHeaders {
 
 /**
  * Verifies that the headers object has the right shape: the values
- * must be either strings or arrays. Throws an error if an invalid
+ * must be either strings, numbers or arrays. Throws an error if an invalid
  * header value is present.
  */
 function assertValidHeaders(headers: Record<string, unknown>):
-    asserts headers is Record<string, string|string[]> {
+    asserts headers is Record<string, string|string[]|number|number[]> {
   for (const [key, value] of Object.entries(headers)) {
-    if (typeof value !== 'string' && !Array.isArray(value)) {
+    if (!['string', 'number'].includes(typeof value) && !Array.isArray(value)) {
       throw new Error(
           `Unexpected value of the \`${key}\` header provided. ` +
-          `Expecting either a string or an array, but got: \`${value}\`.`);
+          `Expecting either a string, a number or an array, but got: \`${value}\`.`);
     }
   }
 }
